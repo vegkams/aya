@@ -4,6 +4,8 @@ use anyhow::{bail, Context as _, Result};
 
 pub const AYA_BUILD_INTEGRATION_BPF: &str = "AYA_BUILD_INTEGRATION_BPF";
 pub const LIBBPF_DIR: &str = "xtask/libbpf";
+pub const LIBXDP_DIR: &str = "xtask/xdp-tools/lib/libxdp";
+pub const XDP_TOOLS_DIR: &str = "xtask/xdp-tools/headers/xdp";
 
 pub fn exec(cmd: &mut Command) -> Result<()> {
     let status = cmd

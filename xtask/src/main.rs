@@ -8,7 +8,7 @@ use std::process::Command;
 use anyhow::{Context as _, Result};
 use cargo_metadata::{Metadata, MetadataCommand};
 use clap::Parser;
-use xtask::{exec, LIBBPF_DIR};
+use xtask::{exec, LIBBPF_DIR, LIBXDP_DIR, XDP_TOOLS_DIR};
 
 #[derive(Parser)]
 pub struct XtaskOptions {
@@ -41,9 +41,13 @@ fn main() -> Result<()> {
     ]))?;
     let libbpf_dir = workspace_root.join(LIBBPF_DIR);
     let libbpf_dir = libbpf_dir.as_std_path();
+    let libxdp_dir = workspace_root.join(LIBXDP_DIR);
+    let libxdp_dir = libxdp_dir.as_std_path();
+    let xdp_tools_dir = workspace_root.join(XDP_TOOLS_DIR);
+    let xdp_tools_dir = xdp_tools_dir.as_std_path();
 
     match command {
-        Subcommand::Codegen(opts) => codegen::codegen(opts, libbpf_dir),
+        Subcommand::Codegen(opts) => codegen::codegen(opts, libbpf_dir, libxdp_dir, xdp_tools_dir),
         Subcommand::Docs => docs::docs(metadata),
         Subcommand::IntegrationTest(opts) => run::run(opts),
         Subcommand::PublicApi(opts) => public_api::public_api(opts, metadata),

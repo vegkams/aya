@@ -100,18 +100,23 @@ enum Command {
     AyaEbpfBindings,
 }
 
-pub fn codegen(opts: Options, libbpf_dir: &Path) -> Result<(), anyhow::Error> {
+pub fn codegen(
+    opts: Options,
+    libbpf_dir: &Path,
+    libxdp_dir: &Path,
+    xdp_tools_dir: &Path,
+) -> Result<(), anyhow::Error> {
     let Options {
         sysroot_options,
         command,
     } = opts;
     match command {
         Some(command) => match command {
-            Command::Aya => aya::codegen(&sysroot_options, libbpf_dir),
+            Command::Aya => aya::codegen(&sysroot_options, libbpf_dir, libxdp_dir, xdp_tools_dir),
             Command::AyaEbpfBindings => aya_ebpf_bindings::codegen(&sysroot_options, libbpf_dir),
         },
         None => {
-            aya::codegen(&sysroot_options, libbpf_dir)?;
+            aya::codegen(&sysroot_options, libbpf_dir, libxdp_dir, xdp_tools_dir)?;
             aya_ebpf_bindings::codegen(&sysroot_options, libbpf_dir)
         }
     }

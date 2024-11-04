@@ -5,9 +5,14 @@ use aya_tool::{bindgen, write_to_file};
 
 use crate::codegen::{Architecture, SysrootOptions};
 
-pub fn codegen(opts: &SysrootOptions, libbpf_dir: &Path) -> Result<(), anyhow::Error> {
+pub fn codegen(
+    opts: &SysrootOptions,
+    libbpf_dir: &Path,
+    libxdp_dir: &Path,
+    xdp_tools_dir: &Path,
+) -> Result<(), anyhow::Error> {
     codegen_internal_btf_bindings(libbpf_dir)?;
-    codegen_bindings(opts, libbpf_dir)
+    codegen_bindings(opts, libbpf_dir, libxdp_dir, xdp_tools_dir)
 }
 
 fn codegen_internal_btf_bindings(libbpf_dir: &Path) -> Result<(), anyhow::Error> {
@@ -51,7 +56,12 @@ fn codegen_internal_btf_bindings(libbpf_dir: &Path) -> Result<(), anyhow::Error>
     Ok(())
 }
 
-fn codegen_bindings(opts: &SysrootOptions, libbpf_dir: &Path) -> Result<(), anyhow::Error> {
+fn codegen_bindings(
+    opts: &SysrootOptions,
+    libbpf_dir: &Path,
+    libxdp_dir: &Path,
+    xdp_tools_dir: &Path,
+) -> Result<(), anyhow::Error> {
     let SysrootOptions {
         x86_64_sysroot,
         aarch64_sysroot,
@@ -113,6 +123,13 @@ fn codegen_bindings(opts: &SysrootOptions, libbpf_dir: &Path) -> Result<(), anyh
         "bpf_cgroup_iter_order",
         // NETFILTER
         "nf_inet_hooks",
+        // XDP
+        "xdp_mmap_offsets",
+        "xdp_umem_reg",
+        // XSK
+        "xsk_ring_prod",
+        "xsk_ring_cons",
+        "xsk_umem_info",
     ];
 
     let vars = [
@@ -167,6 +184,19 @@ fn codegen_bindings(opts: &SysrootOptions, libbpf_dir: &Path) -> Result<(), anyh
         "BPF_RINGBUF_.*",
         // NETFILTER
         "NFPROTO_.*",
+        // XDP
+        "XDP_MMAP_OFFSETS",
+        "XDP_UMEM_REG",
+        "XDP_UMEM_FILL_RING",
+        "XDP_UMEM_COMPLETION_RING",
+        "XDP_UMEM_PGOFF_FILL_RING",
+        "XDP_UMEM_PGOFF_COMPLETION_RING",
+        // XSK
+        "XSK_RING_PROD__DEFAULT_NUM_DESCS",
+        "XSK_RING_CONS__DEFAULT_NUM_DESCS",
+        "XSK_UMEM__DEFAULT_FRAME_SIZE",
+        "XSK_UMEM__DEFAULT_FRAME_HEADROOM",
+        "XSK_UMEM__DEFAULT_FLAGS",
     ];
 
     let dir = PathBuf::from("aya-obj");
@@ -177,6 +207,8 @@ fn codegen_bindings(opts: &SysrootOptions, libbpf_dir: &Path) -> Result<(), anyh
             .header(dir.join("include/linux_wrapper.h").to_string_lossy())
             .clang_args(&["-I", &*libbpf_dir.join("include/uapi").to_string_lossy()])
             .clang_args(&["-I", &*libbpf_dir.join("include").to_string_lossy()])
+            .clang_args(&["-I", &*libxdp_dir.to_string_lossy()])
+            .clang_args(&["-I", &*xdp_tools_dir.to_string_lossy()])
     };
 
     for arch in Architecture::supported() {
